@@ -26,8 +26,8 @@
         - libmysqlclient-dev
         - libqt4-dev
         - libqtwebkit-dev
-        - mysql-server
         - xvfb
+        - libqtwebkit-dev
 
     - name: install mysql packages
       apt: name={{item}} state=installed
