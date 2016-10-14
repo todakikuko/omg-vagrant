@@ -1,2 +1,5 @@
 export PATH="$HOME/.rbenv/bin:$PATH"
+export PATH="$HOME/phantomjs/bin:$PATH"
+export PATH="$HOME/ngrok:$PATH"
+export PATH="/vagrant_data/omg-ns/node_modules/.bin/gulp:$PATH"
 eval "$(rbenv init -)"

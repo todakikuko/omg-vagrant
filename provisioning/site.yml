@@ -1,14 +1,12 @@
 
 - hosts: vagrants
-  sudo: true
-  user: vagrant
   tasks:
     - name: install some packages
       apt: name={{item}} state=present update_cache=yes
+      become: yes
       with_items:
         - imagemagick
         - nodejs
-        - phantomjs
         - openssl
         - libreadline6
         - libreadline6-dev
@@ -27,54 +25,85 @@
         - libqt4-dev
         - libqtwebkit-dev
         - xvfb
-        - libqtwebkit-dev
-
-    - name: install mysql packages
-      apt: name={{item}} state=installed
-      with_items:
+        - g++
+        - flex
+        - bison
+        - gperf
+        - perl
+        - libfontconfig1-dev
+        - libicu-dev
+        - libfreetype6
+        - libssl-dev
+        - libpng-dev
+        - libjpeg-dev
+        - python
+        - libx11-dev
+        - libxext-dev
+        - unzip
         - mysql-server
 
-    - name: Set ruby
-      copy: src=rbenv.sh dest=/home/vagrant/rbenv.sh mode=0777
-      sudo: no
+    - name: copy rbenv.sh
+      copy: src=rbenv.sh dest=~/rbenv.sh mode=0777
+      become: no
 
-    - copy: src=bash_profile dest=/home/vagrant/.bash_profile mode=0775
-      sudo: no
+    - name: copy bash_profile
+      copy: src=bash_profile dest=~/.bash_profile mode=0775
+      become: no
 
-    - git: >
+    - name: git checkout rbenv
+      git: >
         repo=https://github.com/sstephenson/rbenv.git
-        dest=/home/vagrant/.rbenv
-      sudo: no
+        dest=~/.rbenv
+      become: no
 
-    - git: >
+    - name: git checkout ruby-build
+      git: >
         repo=https://github.com/sstephenson/ruby-build.git
-        dest=/home/vagrant/.rbenv/plugins/ruby-build/
-      sudo: no
+        dest=~/.rbenv/plugins/ruby-build/
+      become: no
 
-    - file: path=/home/vagrant/.rbenv owner=vagrant state=directory recurse=yes
-      sudo: no
+    - name: chown rbenv dir
+      file: path=~/.rbenv owner=vagrant state=directory recurse=yes
+      become: no
 
-    - shell: /home/vagrant/.rbenv/plugins/ruby-build/install.sh
+    - name: ruby-build install
+      shell: /home/vagrant/.rbenv/plugins/ruby-build/install.sh
+      become: yes
 
-    - shell: /home/vagrant/rbenv.sh
-      sudo: no
+    - name: set rbenv environment
+      shell: ~/rbenv.sh
+      become: no
 
-    - shell: gem update
-      sudo: no
+    - name: make phantomjs
+      git: >
+        repo=git://github.com/ariya/phantomjs.git
+        dest=~/phantomjs/
+      become: no
+    
+    - name: git phantomjs checkout
+      shell: git checkout 2.1.1 chdir=~/phantomjs
+      become: no
 
-    - shell: gem install bundler
-      sudo: yes
+    - name: phantomjs submodule init
+      shell: git submodule init chdir=~/phantomjs
+      become: no
 
-#    - shell: echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
-#      sudo: no
-#
-#    - shell: echo 'eval "$(rbenv init -)"' >> ~/.bashrc
-#      sudo: no
-#
-#    - shell: echo 'test -r ~/.bashrc && . ~/.bashrc' >> ~/.bash_profile
-#      sudo: no
-# 
-#    - shell: /home/vagrant/.rbenv/plugins/ruby-build/install.sh
-#
-#    - shell: /bin/bash -lc 'rbenv install 2.0.0-p247 && rbenv rehash && rbenv global 2.0.0-p247'
-#      sudo: no
+    - name: phantomjs submodule update
+      shell: git submodule update chdir=~/phantomjs
+      become: no
+
+    - name: build phantomjs
+      shell: python build.py chdir=~/phantomjs
+      become: no
+
+    - name: get ngrok
+      get_url: url=https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
+                 dest=~/
+      become: no
+
+    - name: unzip ngrok
+      shell: yes no | unzip ngrok-stable-linux-amd64.zip chdir=~/
+      become: no
+
+    - shell: echo "please sign up ngrok!! and ./ngrok authtoken your_key"
+      become: no
