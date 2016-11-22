@@ -41,6 +41,7 @@
         - libxext-dev
         - unzip
         - mysql-server
+        - fonts-mplus
 
     - name: copy rbenv.sh
       copy: src=rbenv.sh dest=~/rbenv.sh mode=0777
